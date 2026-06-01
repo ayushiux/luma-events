@@ -63,10 +63,10 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .chip.active{background:var(--text);color:var(--surface);border-color:var(--text)}
 .person-chips{display:flex;gap:8px;align-items:center}
 .person-chips .label{font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
-.person-chip{background:var(--surface);color:var(--t2);border:1px solid var(--border);border-radius:999px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;user-select:none;transition:all .15s var(--eo)}
-.person-chip:active{transform:scale(.96)}
-@media(hover:hover)and(pointer:fine){.person-chip:hover{color:var(--text);border-color:var(--bh)}}
-.person-chip.active{background:var(--accent);color:#fff;border-color:transparent}
+.person-chip{width:36px;height:36px;border-radius:50%;background:var(--surface);color:var(--t2);border:1.5px solid var(--border);font-size:14px;font-weight:700;font-family:var(--fd);cursor:pointer;user-select:none;transition:all .15s var(--eo);display:flex;align-items:center;justify-content:center;padding:0}
+.person-chip:active{transform:scale(.92)}
+@media(hover:hover)and(pointer:fine){.person-chip:hover{color:var(--text);border-color:var(--bh);background:var(--s2)}}
+.person-chip.active{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(232,98,10,.3)}
 .date-range{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .date-range label{font-size:11px;color:var(--t4);font-weight:500}
 .date-range input[type=date]{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;font-size:12px;font-family:var(--fb);outline:none;cursor:pointer;color-scheme:light}
@@ -327,6 +327,7 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 
   <div class="toolbar">
     <input type="search" id="search" placeholder="Search events..."/>
+    <div class="person-chips" id="personChips"></div>
     <label>Sort: <select id="sort">
       <option value="date">Date</option>
       <option value="rsvps">RSVPs</option>
@@ -337,7 +338,6 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
     <button class="filter-toggle" id="filterToggle" onclick="toggleFilters()">Filters <span class="filter-count" id="filterCount"></span></button>
   </div>
   <div class="filter-drawer" id="filterDrawer">
-    <div class="person-chips" id="personChips"><span class="label">For:</span></div>
     <div class="score-slider" id="scoreSlider">
       <label>Min score</label>
       <input type="range" id="scoreRange" min="0" max="100" value="0"/>
@@ -749,7 +749,12 @@ function buildChips(){
   const pRow=S('#personChips'),people=new Set();
   E.forEach(e=>Object.keys(e.scores||{}).forEach(n=>people.add(n)));
   [...people].sort().forEach(p=>{
-    const el=document.createElement('span');el.className='person-chip';el.textContent=p[0].toUpperCase()+p.slice(1);
+    const initial=p[0].toUpperCase();
+    const el=document.createElement('button');
+    el.className='person-chip';
+    el.title=p[0].toUpperCase()+p.slice(1);
+    el.dataset.person=p;
+    el.innerHTML=initial;
     el.onclick=()=>{if(activePerson===p){activePerson=null;el.classList.remove('active');S('#sort').value='date';S('#scoreSlider').classList.remove('show');scoreThreshold=0;S('#scoreRange').value=0;S('#scoreVal').textContent='0'}else{activePerson=p;pRow.querySelectorAll('.person-chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');S('#sort').value=p;S('#scoreSlider').classList.add('show');scoreThreshold=parseInt(S('#scoreRange').value)}updateFilterCount();if(mode==='discover')filterAndRender();else initSwipe()};
     pRow.appendChild(el);
   });
