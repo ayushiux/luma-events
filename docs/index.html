@@ -138,19 +138,12 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 /* Card grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 @media(max-width:768px){.grid{grid-template-columns:1fr;gap:10px}}
-.grid .card:first-child{grid-column:1/-1;height:380px}
-.grid .card:first-child .title{font-size:22px;font-family:var(--fi)}
-.grid .card:nth-child(2),.grid .card:nth-child(3){height:320px}
-.grid .card:nth-child(n+4){height:260px}
+/* Equal size cards — no more first-child hero */
+.grid .card{height:280px}
 .section[data-period="today"] .grid{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch}
-.section[data-period="today"] .grid .card{flex:0 0 360px;scroll-snap-align:start;height:380px}
-.section[data-period="today"] .grid .card:first-child{flex:0 0 500px;grid-column:auto}
-@media(max-width:768px){.section[data-period="today"] .grid .card,.section[data-period="today"] .grid .card:first-child{flex:0 0 85vw;height:340px}}
-.section[data-period="tomorrow"] .grid{grid-template-columns:1.4fr 1fr}
-.section[data-period="tomorrow"] .grid .card:first-child{grid-row:1/3;height:auto;min-height:360px}
-@media(max-width:768px){.section[data-period="tomorrow"] .grid{grid-template-columns:1fr}.section[data-period="tomorrow"] .grid .card:first-child{grid-row:auto;height:320px}}
-
-/* Timeline list rows for Month/Later */
+.section[data-period="today"] .grid .card{flex:0 0 300px;scroll-snap-align:start;height:280px}
+@media(max-width:768px){.section[data-period="today"] .grid .card{flex:0 0 85vw}}
+/* Remove asymmetric tomorrow layout */
 .section[data-period="month"] .grid,.section[data-period="later"] .grid{grid-template-columns:1fr;gap:8px}
 .section[data-period="month"] .grid .card,.section[data-period="later"] .grid .card{height:auto;min-height:88px;flex-direction:row;border-radius:var(--rs)}
 .section[data-period="month"] .grid .card .cover,.section[data-period="later"] .grid .card .cover{position:relative;width:130px;min-width:130px;height:auto;border-radius:var(--rs) 0 0 var(--rs)}
@@ -158,8 +151,6 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .section[data-period="month"] .grid .card .title,.section[data-period="later"] .grid .card .title{font-size:14px;font-weight:600;color:var(--text);text-shadow:none}
 .section[data-period="month"] .grid .card .meta,.section[data-period="later"] .grid .card .meta{color:var(--t3);font-size:12px}
 .section[data-period="month"] .grid .card .rsvp-count,.section[data-period="later"] .grid .card .rsvp-count{color:var(--t4)}
-.section[data-period="month"] .grid .card:first-child,.section[data-period="later"] .grid .card:first-child{height:auto;min-height:88px;grid-column:1}
-.section[data-period="month"] .grid .card:first-child .title,.section[data-period="later"] .grid .card:first-child .title{font-size:14px;font-family:var(--fb)}
 .section[data-period="month"] .grid .card .going-badge,.section[data-period="later"] .grid .card .going-badge{top:8px;left:8px}
 
 /* Cards — grayscale images */
@@ -270,11 +261,20 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .list-host{font-size:11px;color:var(--t4);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-score{font-family:var(--fd);font-size:13px;font-weight:700}
 .list-rsvps{font-size:11px;color:var(--t4);white-space:nowrap}
-.grid-list{grid-template-columns:1fr!important;gap:8px!important}
+.grid-list{grid-template-columns:1fr!important;gap:0!important}
 .grid-list .card:first-child,.grid-list .card:nth-child(2),.grid-list .card:nth-child(3),.grid-list .card:nth-child(n+4){height:auto!important;grid-column:1!important}
 .grid-list .card:first-child .list-title{font-size:14px!important;font-family:var(--fd)!important}
 .section[data-period="today"] .grid-list,.section[data-period="tomorrow"] .grid-list{display:grid!important;overflow-x:visible!important;grid-template-columns:1fr!important}
 .section[data-period="tomorrow"] .grid-list .card:first-child{grid-row:auto!important}
+
+/* Timeline container for list mode */
+.timeline-group{display:flex;gap:0;margin-bottom:8px}
+.timeline-left{width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:20px}
+.timeline-date{font-family:var(--fd);font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;white-space:nowrap}
+.timeline-day{font-family:var(--fi);font-size:18px;font-weight:400;color:var(--accent);line-height:1}
+.timeline-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin:6px 0;flex-shrink:0;box-shadow:0 0 0 3px var(--abg)}
+.timeline-line{flex:1;width:1.5px;background:repeating-linear-gradient(to bottom,var(--border) 0,var(--border) 4px,transparent 4px,transparent 8px);min-height:20px}
+.timeline-events{flex:1;display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
 
 .prep-section{margin:20px 0;padding:20px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rl)}
 .prep-section h3{font-family:var(--fd);font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
@@ -477,7 +477,12 @@ const sectionObs=new IntersectionObserver(entries=>{
     if(entry.isIntersecting){
       // Hydrate section if it has deferred content
       const render=entry.target._deferredRender;
-      if(render){entry.target.querySelector('.grid').innerHTML=render();delete entry.target._deferredRender}
+      if(render){
+        const container=entry.target.querySelector('.grid,.section-header+div');
+        if(container)container.outerHTML=render();
+        else entry.target.insertAdjacentHTML('beforeend',render());
+        delete entry.target._deferredRender;
+      }
       entry.target.classList.add('visible');
       const cards=entry.target.querySelectorAll('.card');
       cards.forEach((c,i)=>{c.style.transitionDelay=`${Math.min(i*50,400)}ms`});
@@ -514,6 +519,37 @@ function filterAndRender(){
   const labels={today:'Happening Today',tomorrow:'Tomorrow',week:'This Week',month:'This Month',later:'Later'};
   const frag=document.createDocumentFragment();
   let sectionIdx=0;
+
+  function buildGridContent(evts){
+    if(cardLayout==='list') return buildTimelineHtml(evts);
+    return `<div class="grid">${evts.map(buildCard).join('')}</div>`;
+  }
+
+  function buildTimelineHtml(evts){
+    // Group by date
+    const byDate={};
+    evts.forEach(e=>{
+      const d=toPST(new Date(e.start_at||''));
+      const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const label=d.toLocaleDateString('en-US',{timeZone:'America/Los_Angeles',weekday:'short',month:'short',day:'numeric'});
+      if(!byDate[key])byDate[key]={label,events:[]};
+      byDate[key].events.push(e);
+    });
+    return Object.values(byDate).map((group,gi,arr)=>{
+      const parts=group.label.split(' ');
+      const weekday=parts[0],month=parts[1],day=parts[2];
+      const hasMore=gi<arr.length-1;
+      return `<div class="timeline-group">
+        <div class="timeline-left">
+          <div class="timeline-date"><span style="font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.08em">${weekday} ${month}</span><br/><span class="timeline-day">${day}</span></div>
+          <div class="timeline-dot"></div>
+          ${hasMore?'<div class="timeline-line"></div>':''}
+        </div>
+        <div class="timeline-events">${group.events.map(buildCard).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
   for(const[k,lbl]of Object.entries(labels)){
     const evts=groups[k];if(!evts||!evts.length)continue;
     const section=document.createElement('div');
@@ -521,12 +557,11 @@ function filterAndRender(){
     section.dataset.period=k;
     const headerHtml=`<div class="section-header">${lbl} <span style="color:var(--t4);font-weight:400;font-size:13px">(${evts.length})</span></div>`;
     if(sectionIdx<2){
-      // Render first 2 sections immediately
-      section.innerHTML=headerHtml+`<div class="grid">${evts.map(buildCard).join('')}</div>`;
+      section.innerHTML=headerHtml+buildGridContent(evts);
     }else{
-      // Defer remaining sections — render on scroll
-      section.innerHTML=headerHtml+`<div class="grid"></div>`;
-      section._deferredRender=()=>evts.map(buildCard).join('');
+      section.innerHTML=headerHtml+(cardLayout==='list'?'<div></div>':'<div class="grid"></div>');
+      section._deferredEvts=evts;
+      section._deferredRender=()=>buildGridContent(evts);
     }
     frag.appendChild(section);
     requestAnimationFrame(()=>sectionObs.observe(section));
@@ -664,7 +699,6 @@ function setMode(m){
 function setCardLayout(l){
   cardLayout=l;
   SA('.layout-btn').forEach(b=>b.classList.toggle('active',b.dataset.layout===l));
-  S('#grid').classList.toggle('grid-list',l==='list');
   filterAndRender();
 }
 window.setCardLayout=setCardLayout;
