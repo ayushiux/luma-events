@@ -418,7 +418,7 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .timeline-left{width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:20px}
 .timeline-date{font-family:var(--fd);font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;white-space:nowrap}
 .timeline-day{font-family:var(--fi);font-size:18px;font-weight:400;color:var(--accent);line-height:1}
-.timeline-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin:6px 0;flex-shrink:0;box-shadow:0 0 0 3px var(--abg)}
+.timeline-dot{width:7px;height:7px;border-radius:50%;background:var(--border);border:1.5px solid var(--bh);margin:6px 0;flex-shrink:0}
 .timeline-line{flex:1;width:1.5px;background:repeating-linear-gradient(to bottom,var(--border) 0,var(--border) 4px,transparent 4px,transparent 8px);min-height:20px}
 .timeline-events{flex:1;display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
 
@@ -596,7 +596,7 @@ function filterAndRender(){
       const hasMore=gi<arr.length-1;
       return `<div class="timeline-group">
         <div class="timeline-left">
-          <div class="timeline-date"><span style="font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.08em">${weekday} ${month}</span><br/><span class="timeline-day">${day}</span></div>
+          <div class="timeline-date"><span style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.06em">${weekday}</span><br/><span style="font-size:12px;color:var(--t2);font-weight:600">${month} ${day}</span></div>
           <div class="timeline-dot"></div>
           ${hasMore?'<div class="timeline-line"></div>':''}
         </div>
