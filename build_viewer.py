@@ -255,7 +255,7 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .hero{display:none;margin:0 0 40px;border-radius:var(--rl);overflow:hidden;position:relative;min-height:380px;cursor:pointer;background-color:var(--s3)}
 .hero.show{display:block}
 .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:var(--img-filter)}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,25,22,.88) 0%,rgba(26,25,22,.25) 55%,transparent 100%);display:flex;align-items:flex-end;padding:40px}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,8,1) 0%,rgba(10,10,8,.7) 40%,rgba(10,10,8,.1) 70%,transparent 100%);display:flex;align-items:flex-end;padding:40px}
 @media(max-width:640px){.hero-overlay{padding:20px}.hero{min-height:260px}}
 .hero-content{display:flex;align-items:flex-end;gap:24px;width:100%}
 .hero-text{flex:1}
@@ -310,9 +310,9 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .badges{position:absolute;top:12px;right:12px;display:flex;gap:5px;z-index:2}
 .badge{background:rgba(255,255,255,.92);color:var(--text);font-size:9px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
 .badge.sold{background:var(--danger);color:#fff}.badge.waitlist{background:#f97316;color:#fff}.badge.open{background:var(--pos);color:#fff}
-.body{position:absolute;bottom:0;left:0;right:0;padding:20px;display:flex;flex-direction:column;gap:5px;background:linear-gradient(to top,rgba(26,25,22,.85),rgba(26,25,22,.3) 65%,transparent);z-index:1}
-.title{font-family:var(--fd);font-size:17px;font-weight:700;color:#fff;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.4)}
-.meta{display:flex;flex-direction:column;gap:2px;font-size:12px;color:rgba(255,255,255,.65)}
+.body{position:absolute;bottom:0;left:0;right:0;padding:16px 18px;display:flex;flex-direction:column;gap:5px;background:linear-gradient(to top,rgba(10,10,8,1) 0%,rgba(10,10,8,.92) 30%,rgba(10,10,8,.6) 60%,transparent 100%);z-index:1;min-height:48%}
+.title{font-family:var(--fd);font-size:16px;font-weight:700;color:#fff;line-height:1.25;text-shadow:none;margin-top:auto}
+.meta{display:flex;flex-direction:column;gap:2px;font-size:12px;color:rgba(255,255,255,.75)}
 .meta .row{display:flex;align-items:center;gap:5px}
 .icon{width:13px;height:13px;opacity:.6;flex-shrink:0}
 .host{display:none}.cats{display:none}
@@ -396,6 +396,7 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 /* List card (Option 1) */
 .card-list{height:auto!important;min-height:88px;flex-direction:row;border-radius:var(--rs)!important}
 .list-thumb{position:relative;width:110px;min-width:110px;border-radius:var(--rs) 0 0 var(--rs);overflow:hidden;background:var(--s3);flex-shrink:0}
+.list-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.25) 0%,transparent 60%);pointer-events:none}
 .list-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .list-thumb .badge{position:absolute;top:8px;left:8px;font-size:8px;padding:3px 7px}
 .list-thumb .going-badge{position:absolute;bottom:6px;left:6px;font-size:8px;padding:2px 8px}
