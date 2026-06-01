@@ -396,6 +396,32 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 @media(hover:hover)and(pointer:fine){.close:hover{background:var(--danger);color:#fff;border-color:var(--danger)}}
 
 /* Prep */
+/* Layout toggle buttons */
+.layout-toggle{display:flex;gap:2px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:3px}
+.layout-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .15s var(--eo)}
+.layout-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+@media(hover:hover)and(pointer:fine){.layout-btn:hover:not(.active){color:var(--text)}}
+
+/* List card (Option 1) */
+.card-list{height:auto!important;min-height:88px;flex-direction:row;border-radius:var(--rs)!important}
+.list-thumb{position:relative;width:110px;min-width:110px;border-radius:var(--rs) 0 0 var(--rs);overflow:hidden;background:var(--s3);flex-shrink:0}
+.list-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.list-thumb .badge{position:absolute;top:8px;left:8px;font-size:8px;padding:3px 7px}
+.list-thumb .going-badge{position:absolute;bottom:6px;left:6px;font-size:8px;padding:2px 8px}
+.list-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.list-title{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t3)}
+.list-meta svg{width:12px;height:12px;opacity:.5;flex-shrink:0}
+.list-foot{display:flex;align-items:center;gap:10px;margin-top:auto}
+.list-host{font-size:11px;color:var(--t4);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-score{font-family:var(--fd);font-size:13px;font-weight:700}
+.list-rsvps{font-size:11px;color:var(--t4);white-space:nowrap}
+.grid-list{grid-template-columns:1fr!important;gap:8px!important}
+.grid-list .card:first-child,.grid-list .card:nth-child(2),.grid-list .card:nth-child(3),.grid-list .card:nth-child(n+4){height:auto!important;grid-column:1!important}
+.grid-list .card:first-child .list-title{font-size:14px!important;font-family:var(--fd)!important}
+.section[data-period="today"] .grid-list,.section[data-period="tomorrow"] .grid-list{display:grid!important;overflow-x:visible!important;grid-template-columns:1fr!important}
+.section[data-period="tomorrow"] .grid-list .card:first-child{grid-row:auto!important}
+
 .prep-section{margin:20px 0;padding:20px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rl)}
 .prep-section h3{font-family:var(--fd);font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
 .prep-news{list-style:none;padding:0;margin:0 0 16px}
@@ -424,7 +450,7 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 # ── JS ────────────────────────────────────────────────────────────────────────
 JS = r"""
 const E=window.__EVENTS__,S=s=>document.querySelector(s),SA=s=>document.querySelectorAll(s);
-let mode='discover',activePerson=null,picks=[],undoStack=[],scoreThreshold=0;
+let mode='discover',activePerson=null,picks=[],undoStack=[],scoreThreshold=0,cardLayout='overlay';
 const cityF=new Set(),catF=new Set(),statusF=new Set();
 const isMobile='ontouchstart'in window&&innerWidth<768;
 let debounceTimer=null;
@@ -449,13 +475,29 @@ function iconCal(){return '<svg class="icon" viewBox="0 0 24 24" fill="none" str
 function iconPin(){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>'}
 
 function buildCard(e){
+  if(cardLayout==='list') return buildCardList(e);
+  return buildCardOverlay(e);
+}
+
+function buildCardOverlay(e){
+  // Option 2: full image, gradient fade, text at bottom
   const s=st(e),sc=activePerson?gS(e,activePerson):0;
   const covImg=e.cover_url?`<img src="${esc(e.cover_url)}" loading="lazy" decoding="async" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`:'';
   const covBg=`style="background-color:${esc(e.tint)}"`;
   const hn=e.calendar_name||(e.hosts[0]||{}).name||'';
-  const ringPh=activePerson?`<div class="ring-placeholder" data-score="${sc}" style="position:absolute;top:14px;left:14px;z-index:3;width:42px;height:42px"></div>`:'';
+  const ringPh=activePerson?`<div class="ring-placeholder" data-score="${sc}" style="position:absolute;top:12px;left:12px;z-index:3;width:42px;height:42px"></div>`:'';
   const isGoing=goingSet.has(e.id);
   return `<div class="card${isGoing?' going':''}" data-id="${esc(e.id)}" tabindex="0"><div class="cover" ${covBg}>${covImg}${ringPh}<div class="badges"><span class="badge ${s}">${stL(s)}</span></div><div class="going-badge">Going</div></div><div class="body"><div class="title">${esc(e.name||'?')}</div><div class="meta"><div class="row">${iconCal()} ${esc(fD(e.start_at))}</div><div class="row">${iconPin()} ${esc(e.venue||e.city||'?')}${e.city&&e.venue?', '+esc(e.city):''}</div></div><div class="rsvp-strip"><span class="rsvp-count">${(e.guest_count||0).toLocaleString()} <span>RSVPs</span></span></div></div></div>`;
+}
+
+function buildCardList(e){
+  // Option 1: thumbnail left, text right
+  const s=st(e),sc=activePerson?gS(e,activePerson):0;
+  const covImg=e.cover_url?`<img src="${esc(e.cover_url)}" loading="lazy" decoding="async" alt="" style="width:100%;height:100%;object-fit:cover"/>`:'';
+  const hn=e.calendar_name||(e.hosts[0]||{}).name||'';
+  const isGoing=goingSet.has(e.id);
+  const scoreTag=activePerson&&sc?`<span class="list-score" style="color:${scC(sc)}">${sc}</span>`:'';
+  return `<div class="card card-list${isGoing?' going':''}" data-id="${esc(e.id)}" tabindex="0"><div class="list-thumb" style="background-color:${esc(e.tint)}">${covImg}<span class="badge ${s}">${stL(s)}</span>${isGoing?'<span class="going-badge">Going</span>':''}</div><div class="list-body"><div class="list-title">${esc(e.name||'?')}</div><div class="list-meta">${iconCal()} ${esc(fD(e.start_at))}</div><div class="list-meta">${iconPin()} ${esc(e.venue||e.city||'?')}${e.city&&e.venue?', '+esc(e.city):''}</div><div class="list-foot"><span class="list-host">by ${esc(hn)}</span>${scoreTag}<span class="list-rsvps">${(e.guest_count||0).toLocaleString()} RSVPs</span></div></div></div>`;
 }
 
 /* Summary */
@@ -673,6 +715,15 @@ function setMode(m){
   if(m==='discover')filterAndRender();
 }
 
+/* Layout toggle */
+function setCardLayout(l){
+  cardLayout=l;
+  SA('.layout-btn').forEach(b=>b.classList.toggle('active',b.dataset.layout===l));
+  S('#grid').classList.toggle('grid-list',l==='list');
+  filterAndRender();
+}
+window.setCardLayout=setCardLayout;
+
 /* Date */
 function setDateRange(preset){
   const df=S('#dateFrom'),dt=S('#dateTo');
@@ -787,6 +838,14 @@ def build_html(data: dict, slimmed: list[dict]) -> str:
       <div class="mode-toggle">
         <button class="mode-btn active" data-mode="discover">Discover</button>
         <button class="mode-btn" data-mode="swipe">Swipe</button>
+      </div>
+      <div class="layout-toggle">
+        <button class="layout-btn active" data-layout="overlay" onclick="setCardLayout('overlay')" title="Image cards">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" fill="currentColor" opacity=".15"/><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="14" height="6" rx="0 0 2 2" fill="currentColor" opacity=".4"/></svg>
+        </button>
+        <button class="layout-btn" data-layout="list" onclick="setCardLayout('list')" title="List view">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="4" rx="1.5" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="14" height="4" rx="1.5" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
       </div>
     </div>
   </header>
