@@ -393,35 +393,31 @@ h1{font-family:var(--fi);font-size:44px;font-weight:400;font-style:normal;letter
 .layout-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 @media(hover:hover)and(pointer:fine){.layout-btn:hover:not(.active){color:var(--text)}}
 
-/* List card (Option 1) */
-.card-list{height:auto!important;min-height:88px;flex-direction:row;border-radius:var(--rs)!important}
-.list-thumb{position:relative;width:110px;min-width:110px;border-radius:var(--rs) 0 0 var(--rs);overflow:hidden;background:var(--s3);flex-shrink:0}
-.list-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.25) 0%,transparent 60%);pointer-events:none}
+/* List card — compact, fit screen */
+.card-list{height:auto!important;min-height:72px;flex-direction:row;border-radius:var(--rs)!important}
+.list-thumb{position:relative;width:88px;min-width:88px;border-radius:var(--rs) 0 0 var(--rs);overflow:hidden;background:var(--s3);flex-shrink:0}
+.list-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.18) 0%,transparent 55%);pointer-events:none}
 .list-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.list-thumb .badge{position:absolute;top:8px;left:8px;font-size:8px;padding:3px 7px}
-.list-thumb .going-badge{position:absolute;bottom:6px;left:6px;font-size:8px;padding:2px 8px}
-.list-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:5px;min-width:0}
-.list-title{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.list-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t3)}
-.list-meta svg{width:12px;height:12px;opacity:.5;flex-shrink:0}
-.list-foot{display:flex;align-items:center;gap:10px;margin-top:auto}
-.list-host{font-size:11px;color:var(--t4);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.list-score{font-family:var(--fd);font-size:13px;font-weight:700}
-.list-rsvps{font-size:11px;color:var(--t4);white-space:nowrap}
+.list-thumb .badge{position:absolute;top:6px;left:6px;font-size:8px;padding:2px 6px}
+.list-thumb .going-badge{position:absolute;bottom:5px;left:5px;font-size:8px;padding:2px 6px}
+.list-body{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0;justify-content:center}
+.list-title{font-family:var(--fd);font-size:13px;font-weight:600;color:var(--text);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-meta{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t3)}
+.list-meta svg{width:11px;height:11px;opacity:.45;flex-shrink:0}
+.list-foot{display:flex;align-items:center;gap:8px;margin-top:2px}
+.list-host{font-size:10px;color:var(--t4);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-score{font-family:var(--fd);font-size:12px;font-weight:700}
+.list-rsvps{font-size:10px;color:var(--t4);white-space:nowrap}
 .grid-list{grid-template-columns:1fr!important;gap:0!important}
 .grid-list .card:first-child,.grid-list .card:nth-child(2),.grid-list .card:nth-child(3),.grid-list .card:nth-child(n+4){height:auto!important;grid-column:1!important}
 .grid-list .card:first-child .list-title{font-size:14px!important;font-family:var(--fd)!important}
 .section[data-period="today"] .grid-list,.section[data-period="tomorrow"] .grid-list{display:grid!important;overflow-x:visible!important;grid-template-columns:1fr!important}
 .section[data-period="tomorrow"] .grid-list .card:first-child{grid-row:auto!important}
 
-/* Timeline container for list mode */
-.timeline-group{display:flex;gap:0;margin-bottom:8px}
-.timeline-left{width:64px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:20px}
-.timeline-date{font-family:var(--fd);font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;white-space:nowrap}
-.timeline-day{font-family:var(--fi);font-size:18px;font-weight:400;color:var(--accent);line-height:1}
-.timeline-dot{width:7px;height:7px;border-radius:50%;background:var(--border);border:1.5px solid var(--bh);margin:6px 0;flex-shrink:0}
-.timeline-line{flex:1;width:1.5px;background:repeating-linear-gradient(to bottom,var(--border) 0,var(--border) 4px,transparent 4px,transparent 8px);min-height:20px}
-.timeline-events{flex:1;display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+/* Timeline — date above first event in each group */
+.timeline-group{margin-bottom:16px}
+.tl-date-header{font-family:var(--fb);font-size:11px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.1em;padding:0 2px 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.timeline-events{display:flex;flex-direction:column;gap:6px}
 
 .prep-section{margin:20px 0;padding:20px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rl)}
 .prep-section h3{font-family:var(--fd);font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
@@ -594,13 +590,8 @@ function filterAndRender(){
     return Object.values(byDate).map((group,gi,arr)=>{
       const parts=group.label.split(' ');
       const weekday=parts[0],month=parts[1],day=parts[2];
-      const hasMore=gi<arr.length-1;
       return `<div class="timeline-group">
-        <div class="timeline-left">
-          <div class="timeline-date"><span style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.06em">${weekday}</span><br/><span style="font-size:12px;color:var(--t2);font-weight:600">${month} ${day}</span></div>
-          <div class="timeline-dot"></div>
-          ${hasMore?'<div class="timeline-line"></div>':''}
-        </div>
+        <div class="tl-date-header">${weekday}, ${month} ${day}</div>
         <div class="timeline-events">${group.events.map(buildCard).join('')}</div>
       </div>`;
     }).join('');
