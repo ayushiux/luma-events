@@ -87,9 +87,19 @@ def git_push() -> bool:
             timeout=60,
         )
 
-    status = git("status", "--porcelain")
-    if not status.stdout.strip():
-        log.info("[git] No changes to commit")
+    def gh(*args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["gh"] + list(args),
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+    # Only publish when the tracked page actually changed; untracked output/*
+    # JSON should never gate or get swept into the commit.
+    if not git("status", "--porcelain", "docs/index.html").stdout.strip():
+        log.info("[git] docs/index.html unchanged — nothing to publish")
         return True
 
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -101,11 +111,23 @@ def git_push() -> bool:
         return False
     log.info(f"[git] Committed: Daily update: {ts}")
 
-    result = git("push")
+    # The repo (ayushiux/luma-events, upstream ayushi/dev) requires the ayushiux
+    # GitHub account. The machine's default active account is agrawalsumeet25-dot,
+    # which 403s on push. Switch to ayushiux for the push, then restore.
+    RESTORE_ACCOUNT = "agrawalsumeet25-dot"
+    sw = gh("auth", "switch", "--user", "ayushiux")
+    if sw.returncode != 0:
+        log.error(f"[git] gh auth switch to ayushiux failed: {sw.stderr.strip()}")
+
+    try:
+        result = git("push")
+    finally:
+        gh("auth", "switch", "--user", RESTORE_ACCOUNT)
+
     if result.returncode != 0:
         log.error(f"[git] push failed: {result.stderr.strip()}")
         return False
-    log.info("[git] Pushed to origin/master")
+    log.info("[git] Pushed to ayushi/dev as ayushiux")
     return True
 
 
@@ -118,8 +140,8 @@ def main() -> int:
 
     results["scrape"] = run_step("scrape", "scrape_luma_recursive.py", timeout_min=10)
     results["second_pass"] = run_step("second_pass", "second_pass.py", timeout_min=8)
-    results["score"] = run_step("score", "score_events.py", timeout_min=5)
-    results["prep"] = run_step("prep", "prep_events.py", timeout_min=5)
+    results["score"] = run_step("score", "score_events.py", timeout_min=20)
+    results["prep"] = run_step("prep", "prep_events.py", timeout_min=20)
     results["build"] = run_step("build", "build_viewer.py", timeout_min=2)
     results["copy"] = copy_to_docs()
     results["git"] = git_push()

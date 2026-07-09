@@ -44,13 +44,28 @@ def make_client():
     )
 
 
-def call_llm(client, prompt: str) -> str:
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=MAX_TOKENS,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.content[0].text
+def call_llm(client, prompt: str, retries: int = 3) -> str:
+    """Call the LLM with retries, guarding against empty/blank proxy responses
+    (an empty response.content previously raised an uncaught IndexError)."""
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            if not response.content:
+                raise ValueError("empty response.content from LLM")
+            text = response.content[0].text
+            if not text or not text.strip():
+                raise ValueError("blank text in LLM response")
+            return text
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt < retries - 1:
+                time.sleep(1.5 * (attempt + 1))
+    raise ValueError(f"LLM call failed after {retries} attempts: {last_exc}")
 
 
 def pm_to_text(node: dict) -> str:
@@ -128,17 +143,22 @@ def content_hash(text: str) -> str:
 def prep_one(client, record: dict) -> dict | None:
     txt = event_text(record)
     prompt = build_prompt(txt)
+    raw = ""
     try:
         raw = call_llm(client, prompt).strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
             raw = raw.rsplit("```", 1)[0]
-        data = json.loads(raw)
+        raw = raw.strip()
+        start = raw.find("{")
+        if start == -1:
+            raise ValueError("no JSON object in response")
+        data, _ = json.JSONDecoder().raw_decode(raw[start:])
         news = data.get("news") or []
         starters = data.get("starters") or []
         return {"news": news[:3], "starters": starters[:4]}
-    except (json.JSONDecodeError, KeyError, ValueError) as exc:
-        print(f"    parse error: {exc}", flush=True)
+    except Exception as exc:  # noqa: BLE001 — never let one event kill the batch
+        print(f"    prep error: {exc}", flush=True)
         return None
 
 
@@ -147,6 +167,23 @@ def latest_scored() -> Path:
     if not dumps:
         raise SystemExit("No scored data. Run score_events.py first.")
     return dumps[-1]
+
+
+def assert_fresh_source(src: Path) -> None:
+    """Guard against the silent-freeze failure mode: if score_events crashed and
+    wrote nothing new, the latest scored file will be older than the latest raw
+    dump. Forwarding it would republish stale data as if it were today's. Fail
+    loudly instead so the pipeline (and supervisor) sees a real failure."""
+    raw_dumps = sorted(OUT_DIR.glob("luma_raw_recursive_*.json"))
+    if not raw_dumps:
+        return
+    latest_raw = raw_dumps[-1]
+    if src.stat().st_mtime < latest_raw.stat().st_mtime:
+        raise SystemExit(
+            f"STALE SOURCE: scored file {src.name} is older than the latest raw "
+            f"dump {latest_raw.name}. score_events likely failed — refusing to "
+            f"republish stale data. Fix scoring and re-run."
+        )
 
 
 def load_cache() -> dict:
@@ -170,6 +207,7 @@ def main() -> int:
 
     ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     src = latest_scored()
+    assert_fresh_source(src)
     print(f"Source: {src.name}")
     data = json.loads(src.read_text(encoding="utf-8"))
     records = data["events"]

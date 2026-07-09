@@ -320,7 +320,7 @@ def crawl_category_place_events(session: requests.Session, category_id: str,
     while True:
         page += 1
         params: dict = {
-            "period": "upcoming",
+            "period": "future",
             "pagination_limit": PAGE_SIZE,
             "discover_place_api_id": BAY_AREA_PLACE_ID,
             "discover_category_api_id": category_id,
@@ -407,7 +407,7 @@ def main() -> int:
     while True:
         page += 1
         params: dict = {
-            "period": "upcoming",
+            "period": "future",
             "pagination_limit": PAGE_SIZE,
             "discover_place_api_id": BAY_AREA_PLACE_ID,
         }

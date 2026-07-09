@@ -45,13 +45,29 @@ def make_client():
     )
 
 
-def call_llm(client, prompt: str) -> str:
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=MAX_TOKENS,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.content[0].text
+def call_llm(client, prompt: str, retries: int = 3) -> str:
+    """Call the LLM with retries. Guards against empty/blank responses from a
+    flaky proxy (which previously raised an uncaught IndexError and killed the
+    entire scoring run)."""
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            if not response.content:
+                raise ValueError("empty response.content from LLM")
+            text = response.content[0].text
+            if not text or not text.strip():
+                raise ValueError("blank text in LLM response")
+            return text
+        except Exception as exc:  # noqa: BLE001 — any transient proxy error should retry
+            last_exc = exc
+            if attempt < retries - 1:
+                time.sleep(1.5 * (attempt + 1))
+    raise ValueError(f"LLM call failed after {retries} attempts: {last_exc}")
 
 
 # ── Profile discovery ─────────────────────────────────────────────────────────
@@ -210,21 +226,29 @@ def score_one(client, profiles: dict[str, str],
               record: dict) -> dict[str, dict] | None:
     summary = event_summary(record)
     prompt = build_prompt(profiles, summary)
+    raw = ""
     try:
         raw = call_llm(client, prompt)
         raw = raw.strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
             raw = raw.rsplit("```", 1)[0]
-        scores = json.loads(raw)
+        # Extract the FIRST JSON object even if the model appends extra prose
+        # after it (raw_decode stops at the end of the first value, so trailing
+        # "Extra data" no longer causes a JSONDecodeError).
+        raw = raw.strip()
+        start = raw.find("{")
+        if start == -1:
+            raise ValueError("no JSON object in response")
+        scores, _ = json.JSONDecoder().raw_decode(raw[start:])
         for name in profiles:
             key = name.lower()
             if key not in scores:
                 scores[key] = {"score": 0, "reason": "not scored"}
             scores[key]["score"] = max(0, min(100, int(scores[key].get("score", 0))))
         return scores
-    except (json.JSONDecodeError, KeyError, ValueError) as exc:
-        print(f"    parse error: {exc} | raw: {raw[:200]}", flush=True)
+    except Exception as exc:  # noqa: BLE001 — never let one event kill the batch
+        print(f"    score error: {exc} | raw: {raw[:200]}", flush=True)
         return None
 
 
